@@ -1,0 +1,40 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build_website:
+  stage: build
+  image: alpine:3.22
+  script:
+    - echo "Starting website build"
+    - mkdir -p public
+    - cp index.html style.css public/
+    - test -s public/index.html
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - public/
+    expire_in: 1 week
+
+test_website:
+  stage: test
+  image: alpine:3.22
+  script:
+    - echo "Testing website files"
+    - test -s public/index.html
+    - test -s public/style.css
+    - grep -q "GitLab CI/CD Automation" public/index.html
+    - echo "All tests passed"
+
+deploy_website:
+  stage: deploy
+  image: alpine:3.22
+  script:
+    - echo "Website is ready for GitLab Pages"
+  pages: true
+  artifacts:
+    paths:
+      - public/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
